@@ -34,13 +34,21 @@ const Post = mongoose.model("Post", postSchema);
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-let posts=[];
+// let posts=[];
 
 app.get("/",(req,res)=>{
-  res.render("home",{
-    StartingContent:homeStartingContent,
-    postss:posts
+  Post.find({}, function (err, posts) {
+
+    res.render("home", {
+
+      startingContent: homeStartingContent,
+
+      posts: posts
+
+    });
+
   });
+  
 
 })
 
@@ -70,23 +78,38 @@ app.post("/compose",(req,res)=>{
     content: req.body.postBody,
   });
 
-  post.save()
-  
-  res.redirect("/")
+  post.save(function (err) {
+
+    if (!err) {
+
+      res.redirect("/");
+
+    }
+
+  });
 });
 
-app.get("/posts/:postName",(req,res)=>{
-  const requestedTitle=_.lowerCase(req.params.postName) ;
-  posts.forEach(post => {
-    const storedTitle=_.lowerCase(post.title) ;
+app.get("/posts/:postId",(req,res)=>{
+  // const requestedTitle = _.lowerCase(req.params.postName);
+  const requestedPostId = req.params.postId;
+  // const storedTitle = _.lowerCase(post.title);
+  Post.findOne({
+    _id: requestedPostId
+  }, function (err, post) {
+    res.render("post", {
 
-    if(storedTitle===requestedTitle){
-      res.render("post",{
-        title:post.title ,
-        content:post.content
-      })
-    }
-  });
+      title: post.title,
+
+      content: post.content
+
+    });
+  })
+    // if(storedTitle===requestedTitle){
+    //   res.render("post",{
+    //     title:post.title ,
+    //     content:post.content
+    //   })
+    // }
 })
 
 
